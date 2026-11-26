@@ -21,7 +21,7 @@ Built with **Next.js 16 + React 19 + TypeScript + Tailwind CSS 4**, **Supabase**
 - **"Your turn, <name>!" pop-up** with a ROLL button, a chime and phone vibration. On phones the ROLL button also sticks to the bottom of the screen
 - Turn timer (default 20s). When time runs out, or a player left or went offline, the computer rolls for them so the game never gets stuck
 - Dice roll animation, then the pawn moves square by square, climbs ladders and slides down snakes, with sound effects (mute toggle)
-- Players list in turn order, live game log, an "exact roll to 100" option, an optional extra turn on a 6, and a 1st/2nd/3rd place mode
+- Players list in turn order, live game log, a bounce-back rule past 100 (98 + 4 → 99, 100, 99, 98; or "stay put" / "finish anyway"), an optional extra turn on a 6, and a 1st/2nd/3rd place mode
 - Confetti winner screen, prize details, unique winner coupon codes and a thank-you code for everyone else
 - Rematch in the same room, spectator mode and an organizer "host screen" for projectors
 - Disconnects don't break the game. Players reconnect by reopening the link. If the host drops out of the lobby, someone else becomes host

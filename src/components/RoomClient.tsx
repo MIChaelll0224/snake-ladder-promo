@@ -7,6 +7,7 @@ import type { Milestone, MoveResult, PlayerView, RoomView } from "@/lib/types";
 import { api, ApiError, clearToken, ctaHref, getToken } from "@/lib/client/api";
 import { isMuted, setMuted, sfx, unlockAudio } from "@/lib/client/sound";
 import { realtimeEnabled, subscribeRoom } from "@/lib/client/realtime";
+import { stepPath } from "@/lib/engine";
 import { Board } from "./Board";
 import { Dice } from "./Dice";
 import { BrandShell, CopyButton, CtaButtons, Logo, Modal, QrCode, Sponsors } from "./ui";
@@ -17,7 +18,7 @@ const MEDALS = ["🥇", "🥈", "🥉"];
 const rankLabel = (r: number | null) => (r == null ? "" : MEDALS[r - 1] ?? `#${r}`);
 const DICE_ROLL_MS = 1000;
 /** How long the pawn animation of a move takes on screen. */
-const moveMs = (m?: MoveResult | null) => (m ? Math.max(0, m.landed - m.from) * 210 + (m.to !== m.landed ? 1300 : 350) : 0);
+const moveMs = (m?: MoveResult | null) => (m ? stepPath(m).length * 210 + (m.to !== m.landed ? 1300 : 350) : 0);
 
 export default function RoomClient({ code, mode }: { code: string; mode: Mode }) {
   const router = useRouter();
@@ -448,6 +449,7 @@ function MoveText({ m }: { m: MoveResult }) {
   if (m.kind === "snake") return <div className="text-sm font-semibold text-rose-300">🐍 Snake! {m.landed} → {m.to}</div>;
   if (m.kind === "finish") return <div className="text-sm font-semibold text-amber-300">🏆 Reached 100!</div>;
   if (m.kind === "blocked") return <div className="text-sm text-white/70">✋ Needs exactly {100 - m.from}</div>;
+  if (m.kind === "bounce") return <div className="text-sm font-semibold text-sky-300">↩️ Too many! Bounced back to {m.to}</div>;
   return (
     <div className="text-sm text-white/70">
       {m.from || "Start"} → {m.to}
@@ -693,7 +695,7 @@ function Lobby({
             ))}
           </ol>
           <p className="mt-3 text-sm text-white/60">
-            You have {cfg.turnSeconds} seconds per turn. {cfg.exactFinish ? "You need the exact number to land on 100." : ""}{" "}
+            You have {cfg.turnSeconds} seconds per turn. {cfg.finishRule === "bounce" ? "You must land exactly on 100 — extra steps bounce you back (98 + 4 → 98)." : cfg.finishRule === "exact" ? "You need the exact number to land on 100." : ""}{" "}
             {cfg.extraTurnOnSix ? `Rolling a ${cfg.diceMax} gives you another turn!` : ""}
           </p>
           {(c.content.prizeTitle || c.prizeByRank.length > 0) && (

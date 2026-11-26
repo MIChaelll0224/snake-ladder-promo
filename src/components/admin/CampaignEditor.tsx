@@ -271,7 +271,13 @@ export default function CampaignEditor({ initial, isNew = false }: { initial: Ca
                 <input type="number" min={1} max={10} className={inp} value={g.winnersCount} onChange={(e) => setIn("gameConfig", { winnersCount: Number(e.target.value) })} />
               </Field>
               <div className="space-y-3 sm:col-span-2">
-                <Toggle checked={g.exactFinish} onChange={(v) => setIn("gameConfig", { exactFinish: v })} label="Exact number required to land on 100 (otherwise any roll past 100 wins)" />
+                <Field label="Rolling past 100">
+                  <select className={inp} value={g.finishRule} onChange={(e) => setIn("gameConfig", { finishRule: e.target.value as typeof g.finishRule })}>
+                    <option value="bounce">Bounce back — 98 + 4 → 99, 100, 99, 98</option>
+                    <option value="exact">Stay put — need the exact number</option>
+                    <option value="any">Finish anyway — any roll past 100 wins</option>
+                  </select>
+                </Field>
                 <Toggle checked={g.extraTurnOnSix} onChange={(v) => setIn("gameConfig", { extraTurnOnSix: v })} label={`Rolling a ${g.diceMax} gives another turn`} />
                 <Toggle checked={g.allowSpectators} onChange={(v) => setIn("gameConfig", { allowSpectators: v })} label="Allow spectators (watch a game without playing)" />
                 <Toggle checked={g.allowPlayerHosting} onChange={(v) => setIn("gameConfig", { allowPlayerHosting: v })} label="Players can host their own rooms from the landing page" />

@@ -1,6 +1,6 @@
 // Pure game engine. No I/O. Used only on the server for authoritative moves
 // (board geometry helpers are also used by the client for rendering).
-import type { BoardLayout, GameConfig, LiveState, MoveResult, Pair } from "./types";
+import type { BoardLayout, FinishRule, GameConfig, LiveState, MoveResult, Pair } from "./types";
 
 export type Rng = (maxExclusive: number) => number; // integer in [0, max)
 
@@ -113,19 +113,36 @@ export function boardFor(config: GameConfig, rng: Rng): BoardLayout {
 
 // ---------------------------------------------------------------- movement
 
-export function movePlayer(position: number, roll: number, board: BoardLayout, exactFinish: boolean): MoveResult {
+export function movePlayer(position: number, roll: number, board: BoardLayout, rule: FinishRule = "bounce"): MoveResult {
   const from = position;
   let landed = from + roll;
+  let bounce = false;
   if (landed > BOARD_SIZE) {
-    if (exactFinish) return { from, roll, landed: from, to: from, kind: "blocked" };
-    landed = BOARD_SIZE;
+    if (rule === "exact") return { from, roll, landed: from, to: from, kind: "blocked" };
+    if (rule === "bounce") {
+      // count up to 100, then back down: 98 + 4 → 99, 100, 99, 98
+      landed = BOARD_SIZE - (landed - BOARD_SIZE);
+      bounce = true;
+    } else landed = BOARD_SIZE;
   }
+  const extra = bounce ? { bounce } : {};
   if (landed === BOARD_SIZE) return { from, roll, landed, to: BOARD_SIZE, kind: "finish" };
   const ladder = board.ladders.find(([a]) => a === landed);
-  if (ladder) return { from, roll, landed, to: ladder[1], kind: "ladder" };
+  if (ladder) return { from, roll, landed, to: ladder[1], kind: "ladder", ...extra };
   const snake = board.snakes.find(([a]) => a === landed);
-  if (snake) return { from, roll, landed, to: snake[1], kind: "snake" };
-  return { from, roll, landed, to: landed, kind: "move" };
+  if (snake) return { from, roll, landed, to: snake[1], kind: "snake", ...extra };
+  return { from, roll, landed, to: landed, kind: bounce ? "bounce" : "move", ...extra };
+}
+
+/** Squares the pawn visits step by step for a move (before any ladder/snake slide). */
+export function stepPath(m: Pick<MoveResult, "from" | "landed" | "bounce" | "kind">): number[] {
+  if (m.kind === "blocked") return [];
+  const steps: number[] = [];
+  if (m.bounce) {
+    for (let s = m.from + 1; s <= BOARD_SIZE; s++) steps.push(s);
+    for (let s = BOARD_SIZE - 1; s >= m.landed; s--) steps.push(s);
+  } else for (let s = m.from + 1; s <= m.landed; s++) steps.push(s);
+  return steps;
 }
 
 /** Next player (in turn order) who is still racing, after `fromId`. */
@@ -155,7 +172,7 @@ export function applyRoll(prev: LiveState, roll: number, config: GameConfig, now
   const pid = state.turn;
   if (!pid || !state.players[pid]) throw new Error("no current player");
   const p = state.players[pid];
-  const move = movePlayer(p.position, roll, state.board, config.exactFinish);
+  const move = movePlayer(p.position, roll, state.board, config.finishRule);
   p.position = move.to;
   state.rollCount += 1;
   state.lastRoll = { seq: state.rollCount, playerId: pid, roll, move, auto, at: now };

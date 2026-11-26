@@ -1,7 +1,7 @@
 "use client";
 
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { cellCenter } from "@/lib/engine";
+import { cellCenter, stepPath } from "@/lib/engine";
 import type { BoardLayout, MoveResult } from "@/lib/types";
 import { sfx } from "@/lib/client/sound";
 
@@ -164,8 +164,7 @@ function AnimatedPawn({
         setSlide(false);
         setPos(move.from);
         const stepMs = 210;
-      const steps: number[] = [];
-      for (let s = move.from + 1; s <= move.landed; s++) steps.push(s);
+      const steps = stepPath(move);
       steps.forEach((s, i) =>
         timers.current.push(
           setTimeout(() => {

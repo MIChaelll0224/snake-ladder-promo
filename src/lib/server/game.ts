@@ -483,6 +483,8 @@ function doRoll(s: LiveState, ctx: Ctx, auto: boolean): Mutation {
   else if (m.kind === "snake") [type, message] = ["snake", `🐍 ${who} rolled ${roll} and got bitten! ${m.landed} → ${m.to}`];
   else if (m.kind === "finish") [type, message] = ["finish", `🏆 ${who} rolled ${roll} and reached 100! (#${p.rank})`];
   else if (m.kind === "blocked") message = `✋ ${who} rolled ${roll} — needs exactly ${100 - m.from} to finish`;
+  else if (m.kind === "bounce") message = `↩️ ${who} rolled ${roll} — too many! Bounced back from 100 to ${m.to}`;
+  if (m.bounce && (m.kind === "ladder" || m.kind === "snake")) message = message.replace(" and ", ", bounced back to " + m.landed + " and ");
   const logs: LogInput[] = [{ playerId: pid, type, message, data: { auto, ...m } }];
   if (out.extraTurn) logs.push({ playerId: pid, type: "extra", message: `⭐ ${p.nickname} rolled a ${roll} — roll again!`, data: {} });
   if (out.gameOver)

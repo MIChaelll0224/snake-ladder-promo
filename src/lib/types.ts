@@ -38,7 +38,9 @@ export interface GameConfig {
   turnSeconds: number; // time a player has to roll before the computer rolls for them
   startCountdownSec: number; // delay before the first turn
   diceMax: number; // 6 = classic die
-  exactFinish: boolean; // must land exactly on 100
+  /** What happens when a roll goes past 100:
+   *  bounce = count back down (98 + 4 → 99, 100, 99, 98), exact = stay put, any = finish anyway */
+  finishRule: FinishRule;
   extraTurnOnSix: boolean; // rolling the highest number gives another turn
   winnersCount: number; // how many places end the game (1 = first to 100)
   snakesCount: number;
@@ -47,6 +49,8 @@ export interface GameConfig {
   allowSpectators: boolean;
   allowPlayerHosting: boolean; // players can create rooms from the landing page
 }
+
+export type FinishRule = "bounce" | "exact" | "any";
 
 export type FieldType = "text" | "email" | "tel" | "select";
 export interface RegistrationField {
@@ -142,7 +146,7 @@ export interface PlayerRecord {
 
 // ---- Live game state (one row per room, updated atomically with a version check)
 
-export type MoveKind = "move" | "ladder" | "snake" | "blocked" | "finish" | "none";
+export type MoveKind = "move" | "ladder" | "snake" | "blocked" | "bounce" | "finish" | "none";
 
 export interface MoveResult {
   from: number;
@@ -150,6 +154,7 @@ export interface MoveResult {
   landed: number; // square reached by the roll (before ladder/snake)
   to: number; // final square
   kind: MoveKind;
+  bounce?: boolean; // went past 100 and counted back down to `landed`
 }
 
 export interface LivePlayer {

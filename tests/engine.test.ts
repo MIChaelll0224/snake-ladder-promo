@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { applyRoll, cellRC, emptyState, generateBoard, movePlayer } from "../src/lib/engine";
+import { applyRoll, cellRC, emptyState, generateBoard, movePlayer, stepPath } from "../src/lib/engine";
 import { DEFAULT_GAME_CONFIG, normalizeCampaign } from "../src/lib/defaults";
 import type { BoardLayout, LiveState } from "../src/lib/types";
 
@@ -15,17 +15,31 @@ test("boustrophedon numbering", () => {
   assert.deepEqual(cellRC(100), { row: 9, col: 0 });
 });
 
-test("ladders, snakes, finish and exact finish", () => {
-  assert.equal(movePlayer(0, 4, board, false).to, 25);
-  assert.equal(movePlayer(0, 4, board, false).kind, "ladder");
-  assert.equal(movePlayer(36, 4, board, false).to, 3);
-  assert.equal(movePlayer(36, 4, board, false).kind, "snake");
-  assert.equal(movePlayer(10, 3, board, false).to, 13);
-  assert.equal(movePlayer(98, 5, board, false).kind, "finish");
-  const blocked = movePlayer(98, 5, board, true);
+test("ladders, snakes, finish rules", () => {
+  assert.equal(movePlayer(0, 4, board).to, 25);
+  assert.equal(movePlayer(0, 4, board).kind, "ladder");
+  assert.equal(movePlayer(36, 4, board).to, 3);
+  assert.equal(movePlayer(36, 4, board).kind, "snake");
+  assert.equal(movePlayer(10, 3, board).to, 13);
+  assert.equal(movePlayer(98, 2, board).kind, "finish");
+  assert.equal(movePlayer(98, 5, board, "any").kind, "finish");
+  const blocked = movePlayer(98, 5, board, "exact");
   assert.equal(blocked.kind, "blocked");
   assert.equal(blocked.to, 98);
-  assert.equal(movePlayer(98, 2, board, true).kind, "finish");
+});
+
+test("bounce back past 100: 98 + 4 → 99, 100, 99, 98", () => {
+  const m = movePlayer(98, 4, { snakes: [], ladders: [] }, "bounce");
+  assert.equal(m.to, 98);
+  assert.equal(m.kind, "bounce");
+  assert.deepEqual(stepPath(m), [99, 100, 99, 98]);
+  assert.equal(movePlayer(99, 6, { snakes: [], ladders: [] }).to, 95);
+  // bouncing onto a snake head still bites (board has a snake 97 → 78)
+  const bitten = movePlayer(99, 4, board);
+  assert.equal(bitten.landed, 97);
+  assert.equal(bitten.to, 78);
+  assert.equal(bitten.kind, "snake");
+  assert.deepEqual(stepPath(bitten), [100, 99, 98, 97]);
 });
 
 test("generated boards are valid and never chained", () => {
