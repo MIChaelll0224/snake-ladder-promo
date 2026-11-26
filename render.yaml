@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: snake-ladder-promo
+    runtime: node
+    plan: free
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      # Password for /admin - Render asks for it when you create the Blueprint
+      - key: ADMIN_PASSWORD
+        sync: false
+      # Signs admin sessions and hashes player tokens
+      - key: APP_SECRET
+        generateValue: true

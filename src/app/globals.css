@@ -1,0 +1,229 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
+  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  --brand-primary: #7c3aed;
+  --brand-secondary: #f59e0b;
+  --brand-accent: #10b981;
+  --brand-bg: #1e1b4b;
+}
+
+html,
+body {
+  min-height: 100%;
+}
+body {
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.brand-bg {
+  background-color: var(--brand-bg);
+  background-image:
+    radial-gradient(circle at 15% 10%, color-mix(in oklab, var(--brand-primary) 55%, transparent) 0, transparent 45%),
+    radial-gradient(circle at 85% 0%, color-mix(in oklab, var(--brand-secondary) 40%, transparent) 0, transparent 40%),
+    radial-gradient(circle at 50% 100%, color-mix(in oklab, var(--brand-accent) 35%, transparent) 0, transparent 50%);
+  background-attachment: fixed;
+}
+.brand-bg-image {
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+}
+
+.glass {
+  background: rgb(255 255 255 / 0.08);
+  border: 1px solid rgb(255 255 255 / 0.14);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* sticky turn bar needs a solid backdrop so the board doesn't show through */
+.ball-bar {
+  background: color-mix(in oklab, var(--brand-bg) 92%, transparent);
+  box-shadow: 0 10px 25px -10px rgb(0 0 0 / 0.6);
+}
+.ball-bar.my-turn {
+  background: var(--brand-accent);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.75rem 1.4rem;
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  transition: transform 0.12s ease, filter 0.15s ease, box-shadow 0.15s ease, opacity 0.15s;
+  user-select: none;
+}
+.btn:active:not(:disabled) {
+  transform: translateY(2px) scale(0.98);
+}
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--brand-primary);
+  color: white;
+  box-shadow: 0 5px 0 color-mix(in oklab, var(--brand-primary) 60%, black), 0 10px 24px -6px color-mix(in oklab, var(--brand-primary) 70%, transparent);
+}
+.btn-secondary {
+  background: var(--brand-secondary);
+  color: #1f1300;
+  box-shadow: 0 5px 0 color-mix(in oklab, var(--brand-secondary) 60%, black);
+}
+.btn-accent {
+  background: var(--brand-accent);
+  color: white;
+  box-shadow: 0 5px 0 color-mix(in oklab, var(--brand-accent) 60%, black);
+}
+.btn-outline {
+  background: rgb(255 255 255 / 0.06);
+  color: white;
+  border: 2px solid rgb(255 255 255 / 0.5);
+}
+.btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+
+.input {
+  width: 100%;
+  border-radius: 0.9rem;
+  border: 2px solid rgb(255 255 255 / 0.2);
+  background: rgb(255 255 255 / 0.95);
+  color: #111827;
+  padding: 0.7rem 0.95rem;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.input:focus {
+  border-color: var(--brand-secondary);
+  box-shadow: 0 0 0 4px color-mix(in oklab, var(--brand-secondary) 35%, transparent);
+}
+
+/* ---------------- board */
+.board-cell {
+  container-type: size;
+}
+.board-num {
+  font-size: clamp(5px, 26cqw, 15px);
+}
+
+.pawn {
+  transition: left 0.2s ease-out, top 0.2s ease-out;
+  will-change: left, top;
+}
+.pawn.slide {
+  transition: left 0.75s cubic-bezier(0.5, 0, 0.3, 1), top 0.75s cubic-bezier(0.5, 0, 0.3, 1);
+}
+.pawn-hop {
+  animation: hop 0.2s ease-out;
+}
+@keyframes hop {
+  0% { transform: translate(-50%, -50%) scale(1); }
+  50% { transform: translate(-50%, -85%) scale(1.12); }
+  100% { transform: translate(-50%, -50%) scale(1); }
+}
+
+/* ---------------- ball */
+.ball {
+  background: radial-gradient(circle at 32% 28%, #fff 0, #fff 12%, var(--ball-color, #f59e0b) 13%, color-mix(in oklab, var(--ball-color, #f59e0b) 65%, black) 100%);
+  box-shadow: inset -6px -10px 18px rgb(0 0 0 / 0.25), 0 12px 30px -8px rgb(0 0 0 / 0.6);
+}
+.ball-face {
+  background: white;
+  color: #111;
+  box-shadow: inset 0 2px 6px rgb(0 0 0 / 0.2);
+}
+.ball-rolling {
+  animation: ballroll 0.35s linear infinite;
+}
+@keyframes ballroll {
+  0% { transform: rotate(0deg) translateY(0); }
+  25% { transform: rotate(90deg) translateY(-6px); }
+  50% { transform: rotate(180deg) translateY(0); }
+  75% { transform: rotate(270deg) translateY(-6px); }
+  100% { transform: rotate(360deg) translateY(0); }
+}
+.dice-rolling {
+  animation: dicetumble 0.45s linear infinite;
+}
+@keyframes dicetumble {
+  0% { transform: rotate(0deg) translate(0, 0); }
+  25% { transform: rotate(80deg) translate(4px, -10px); }
+  50% { transform: rotate(180deg) translate(0, 0); }
+  75% { transform: rotate(260deg) translate(-4px, -10px); }
+  100% { transform: rotate(360deg) translate(0, 0); }
+}
+.your-turn-pop {
+  animation: yourturn 0.5s cubic-bezier(0.2, 1.5, 0.4, 1) both;
+}
+@keyframes yourturn {
+  from { opacity: 0; transform: scale(0.6) rotate(-4deg); }
+  to { opacity: 1; transform: none; }
+}
+.active-pawn {
+  animation: activepawn 1.2s ease-in-out infinite;
+}
+@keyframes activepawn {
+  0%, 100% { box-shadow: 0 0 0 2px #fff, 0 0 0 5px var(--brand-secondary); }
+  50% { box-shadow: 0 0 0 2px #fff, 0 0 0 9px transparent; }
+}
+.ball-pop {
+  animation: ballpop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1);
+}
+@keyframes ballpop {
+  0% { transform: scale(0.6); }
+  100% { transform: scale(1); }
+}
+
+.flash {
+  animation: flash 1.6s ease-out;
+}
+@keyframes flash {
+  0% { box-shadow: 0 0 0 0 var(--flash, #facc15); }
+  30% { box-shadow: 0 0 0 6px var(--flash, #facc15); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+.float-in {
+  animation: floatin 0.35s ease-out both;
+}
+@keyframes floatin {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.wiggle {
+  animation: wiggle 2.4s ease-in-out infinite;
+}
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(3deg); }
+}
+
+.pulse-ring {
+  animation: pulsering 1.6s ease-out infinite;
+}
+@keyframes pulsering {
+  0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--brand-accent) 70%, transparent); }
+  100% { box-shadow: 0 0 0 14px transparent; }
+}
+
+.scrollbar-thin::-webkit-scrollbar { width: 6px; height: 6px; }
+.scrollbar-thin::-webkit-scrollbar-thumb { background: rgb(255 255 255 / 0.25); border-radius: 9999px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .pawn, .pawn.slide { transition-duration: 0.01s; }
+  .ball-rolling, .wiggle, .pulse-ring, .flash { animation: none; }
+}
